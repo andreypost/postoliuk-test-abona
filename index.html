@@ -82,9 +82,10 @@
             cursor: pointer;
         }
 
-        #modalInfo p {
+        .header__links, #modalInfo p {
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
 
         #modalInfo p span {
@@ -104,7 +105,10 @@
 
 <body>
     <section>
-        <button id="getYardHub">getYardHub</button>
+        <div class="header__links">
+            <button id="getYardHub">getYardHub</button>
+            <a href="https://github.com/andreypost/postoliuk-test-abona" target="_blanck">Link to: github.com/andreypost/postoliuk-test-abona</a>
+        </div>
         <form action="" id="form">
             <hgroup>
                 <h2>Register Container Cargo Unit</h2>
@@ -140,9 +144,9 @@
     </section>
 
     <script type="text/javascript" src="https://cdn3.devexpress.com/jslib/19.2.6/js/dx.all.js"></script>
-    <script type="text/javascript" src="..\node_modules\jquery\dist\jquery.min.js"></script>
-    <!-- <script type="text/javascript" src="..\node_modules\signalr\jquery.signalR.js"></script> -->
-    <script type="text/javascript" src="..\node_modules\signalr\jquery.signalR.min.js"></script>
+    <script type="text/javascript" src="./jquery.min.js"></script>
+    <script type="text/javascript" src="./jquery.signalR.js"></script>
+    <script type="text/javascript" src="./jquery.signalR.min.js"></script>
     <script type="text/javascript" src="https://yardcorestandarddevelopment.azurewebsites.net/signalr/hubs"></script>
 
     <script>
@@ -285,5 +289,4 @@
 
     </script>
 </body>
-
 </html>
