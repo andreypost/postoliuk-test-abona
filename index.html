@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GetCargoUnitsInYard</title>
+    <link rel="stylesheet" href="https://cdn3.devexpress.com/jslib/19.2.6/css/dx.common.css">
+    <link rel="stylesheet" href="https://cdn3.devexpress.com/jslib/19.2.6/css/dx.light.css">
+    <style>
+        section {
+            max-width: 1920px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        form {
+            max-width: 440px;
+            display: flex;
+            flex-flow: column;
+            margin: 40px auto;
+            text-align: center;
+        }
+
+        input,
+        button {
+            margin: 10px 0;
+            padding: 5px 10px;
+        }
+
+        #modalError,
+        #modalInfo {
+            display: none;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 999;
+        }
+
+        #modalError>article,
+        #modalInfo>article {
+            width: 60%;
+            height: 240px;
+            display: flex;
+            flex-flow: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            margin: 1% auto 0;
+            background: white;
+        }
+
+        .button__close {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 15px 22px;
+            font-size: 20px;
+            font-style: normal;
+            z-index: 99999;
+            cursor: pointer;
+        }
+
+        .buttons {
+            display: flex;
+        }
+
+        .yes,
+        .no {
+            width: 120px;
+            border: 1px solid grey;
+            margin: 20px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            background: greenyellow;
+            color: white;
+            cursor: pointer;
+        }
+
+        #modalInfo p {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #modalInfo p span {
+            padding-left: 10px;
+            font-weight: 600;
+        }
+
+        @media screen and (max-width: 768px) {
+
+            #modalError>article,
+            #modalInfo>article {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <section>
+        <button id="getYardHub">getYardHub</button>
+        <form action="" id="form">
+            <hgroup>
+                <h2>Register Container Cargo Unit</h2>
+            </hgroup>
+            <input type="text" name="plate" placeholder="registration plate" required>
+            <input type="text" name="number" placeholder="transport number" required>
+            <input type="text" name="company" placeholder="transport company" required>
+            <button>REGISTER</button>
+        </form>
+        <div>
+            <div id="widget"></div>
+        </div>
+        <div id="modalError">
+            <article>
+                <i class="button__close">X</i>
+                <h2>Unable to add item now! <br> Would you like to save your data?</h2>
+                <div class="buttons">
+                    <button class="yes">YES</button><button class="no">NO</button>
+                </div>
+            </article>
+        </div>
+        <div id="modalInfo">
+            <article>
+                <i class="button__close">X</i>
+                <h2>Your data saved!</h2>
+                <div>
+                    <p>Your registration plate: <span class="plate"></span></p>
+                    <p>Your transport number: <span class="number"></span></p>
+                    <p>Your transport company: <span class="company"></span></p>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <script type="text/javascript" src="https://cdn3.devexpress.com/jslib/19.2.6/js/dx.all.js"></script>
+    <script type="text/javascript" src="..\node_modules\jquery\dist\jquery.min.js"></script>
+    <!-- <script type="text/javascript" src="..\node_modules\signalr\jquery.signalR.js"></script> -->
+    <script type="text/javascript" src="..\node_modules\signalr\jquery.signalR.min.js"></script>
+    <script type="text/javascript" src="https://yardcorestandarddevelopment.azurewebsites.net/signalr/hubs"></script>
+
+    <script>
+        let currentModal = null
+        const showModal = (modal, formValues) => {
+            if (currentModal) {
+                hideModal(currentModal)
+                currentModal = null
+            }
+            let width = document.documentElement.clientWidth
+            document.body.style.overflowY = 'hidden'
+            document.body.style.paddingRight = `${document.documentElement.clientWidth - width}px`
+            currentModal = modal
+            currentModal.style.display = 'block'
+            let form = document.getElementById('form')
+            form.plate.value = form.number.value = form.company.value = ''
+            currentModal.onclick = (e) => {
+                let target = e.target.closest('.yes,.button__close,.no')
+                if (!target) return
+                if (target.className == 'yes') {
+                    let modal = document.getElementById('modalInfo')
+                    modal.querySelector('.plate').innerHTML = formValues.plate
+                    modal.querySelector('.number').innerHTML = formValues.number
+                    modal.querySelector('.company').innerHTML = formValues.company
+                    showModal(modal)
+                } else {
+                    hideModal(modal)
+                }
+            }
+            document.addEventListener('keydown', (e) => {
+                if (e.key == 'Escape') {
+                    hideModal(currentModal)
+                }
+            })
+            window.addEventListener('click', (e) => {
+                if (e.target == modal) {
+                    hideModal(currentModal)
+                }
+            })
+        }
+        const hideModal = (modal) => {
+            modal.style.display = 'none'
+            document.body.style.overflowY = ''
+            document.body.style.paddingRight = `${0}px`
+        }
+        const getItems = () => {
+            fetch('https://yardwebapiexp.azurewebsites.net/api/CargoUnits/GetCargoUnitsInYard')
+                .then(response => response.json())
+                .then(data => new DevExpress.ui.dxDataGrid(document.getElementById('widget'), { 'dataSource': data }))
+                .catch(error => console.error('Unable to get items.', error));
+        }
+        getItems()
+        const addItem = (form) => {
+            form.onsubmit = (e) => {
+                e.preventDefault()
+                let formData = new FormData(form)
+                let formValues = {
+                    plate: formData.getAll('plate').toString().trim(),
+                    number: formData.getAll('number').toString().trim(),
+                    company: formData.getAll('company').toString().trim(),
+                }
+                fetch(`https://yardwebapiexp.azurewebsites.net/api/CargoUnits/RegisterContainerCargoUnit/${formValues.plate}/${formValues.number}/${formValues.company}`, {
+                    method: 'POST'
+                })
+                    .then(response => response.json())
+                    .then(() => getItems())
+                    .catch(() => showModal(document.getElementById('modalError'), formValues))
+            }
+        }
+        addItem(document.getElementById('form'))
+
+        // < ----------------------------------------------------------------- >
+
+
+       
+        // without proxy
+        /*
+        let connection = $.hubConnection();
+ 
+        let yardHubProxy = connection.createHubProxy('yardHub');
+        yardHubProxy.on('BCMAck', function(operationArguments, token, seq) {
+            console.log(operationArguments, token, seq);
+        });
+        connection.start()
+            .done(function(){ console.log('Now connected, connection ID=' + connection.id); })
+            .fail(function(){ console.log('Could not connect'); });
+        */
+
+
+        // with proxy
+        /*
+        let yardHubProxy = $.connection.yardHub;
+        console.log(yardHubProxy);
+
+
+        yardHubProxy.client.bCMAck = function (operationArguments, token, seq) {
+            console.log(operationArguments, token, seq);
+        };
+        $.connection.hub.start().done(function () {
+            $('#getYardHub').click(function () {
+                // yardHubProxy.server.getYardHub();
+                console.log(yardHubProxy)
+            });
+        }); */
+
+
+
+
+                var yardHubProxy = $.connection.yardHub;
+                console.log("eventsource------------------------", yardHubProxy.eventSource)
+
+                $.connection.hub.url = 'https://yardcorestandarddevelopment.azurewebsites.net/signalr/yardHub';
+                // $.connection.hub.logging = true;
+                    
+                    $.connection.hub.start()
+                        .done((data) => {
+                            // console.log(data);
+                            // console.log("+++++++++++++++++++++++++++++conection:", yardHubProxy);
+
+                            // console.log("eventsource------------------------", data.eventSource);
+                            let eventSource = new EventSource(data.eventSource.url);
+
+                            eventSource.onmessage = function (event) {
+                                console.log("Новое сообщение", event.data);
+
+                            };
+                        })
+                        .fail(function () {
+                            // console.log('Could not Connect!');
+
+                        });
+
+        // var connection = $.hubConnection('/MyApp/signalr', { useDefaultPath: false });
+        // console.log(connection)
+
+        // let connection01 = new signalR.HubConnectionBuilder().withUrl("https://yardcorestandarddevelopment.azurewebsites.net/signalr/hubs").build()
+
+        // console.log(connection01)
+
+
+    </script>
+</body>
+
+</html>
