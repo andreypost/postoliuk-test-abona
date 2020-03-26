@@ -147,7 +147,7 @@
     <script type="text/javascript" src="./jquery.min.js"></script>
     <script type="text/javascript" src="./jquery.signalR.js"></script>
     <script type="text/javascript" src="./jquery.signalR.min.js"></script>
-    <script type="text/javascript" src="https://yardcorestandarddevelopment.azurewebsites.net/signalr/hubs"></script>
+    <!-- <script type="text/javascript" src="https://yardcorestandarddevelopment.azurewebsites.net/signalr/hubs"></script> -->
 
     <script>
         let currentModal = null
@@ -223,17 +223,19 @@
 
        
         // without proxy
-        /*
+        
         let connection = $.hubConnection();
- 
         let yardHubProxy = connection.createHubProxy('yardHub');
+        console.log(yardHubProxy);
+
         yardHubProxy.on('BCMAck', function(operationArguments, token, seq) {
             console.log(operationArguments, token, seq);
         });
         connection.start()
             .done(function(){ console.log('Now connected, connection ID=' + connection.id); })
             .fail(function(){ console.log('Could not connect'); });
-        */
+            
+        
 
 
         // with proxy
@@ -254,7 +256,7 @@
 
 
 
-
+/*
                 var yardHubProxy = $.connection.yardHub;
                 console.log("eventsource------------------------", yardHubProxy.eventSource)
 
@@ -278,6 +280,7 @@
                             // console.log('Could not Connect!');
 
                         });
+                        */
 
         // var connection = $.hubConnection('/MyApp/signalr', { useDefaultPath: false });
         // console.log(connection)
